@@ -52,7 +52,7 @@ public class PersonOverviewController {
     /**
      * Is called by the main application to give a reference back to itself.
      * 
-     * @param mainApp
+     * @param desrollo
      */
     public void setDesarrollo(Desarrollo desarrollo) {
         this.desarrollo = desarrollo;
