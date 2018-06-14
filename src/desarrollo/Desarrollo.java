@@ -101,7 +101,7 @@ public class Desarrollo extends Application {
 		try {
 			// Load the fxml file and create a new stage for the popup dialog.
 			FXMLLoader loader = new FXMLLoader();
-			loader.setLocation(Desarrollo.class.getResource("desarrollo/view/PersonEditDialog.fxml"));
+			loader.setLocation(Desarrollo.class.getResource("view/PersonEditDialog.fxml"));
 			AnchorPane page = (AnchorPane) loader.load();
 
 			// Create the dialog Stage.

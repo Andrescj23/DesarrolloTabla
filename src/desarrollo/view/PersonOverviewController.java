@@ -62,24 +62,15 @@ public class PersonOverviewController {
 				(observable, oldValue, newValue) -> showPersonDetails(newValue));
     }
 
-    /**
-     * Is called by the main application to give a reference back to itself.
-     * 
-     * @param mainApp
-     */
-    public void setMainApp(Desarrollo desarrollo) {
+
+    public void setDesarrollo(Desarrollo desarrollo) {
         this.desarrollo = desarrollo;
 
         // Add observable list data to the table
         personTable.setItems(desarrollo.getPersonData());
     }
     
-    /**
-     * Fills all text fields to show details about the person.
-     * If the specified person is null, all text fields are cleared.
-     * 
-     * @param person the person or null
-     */
+   
     private void showPersonDetails(Person person) {
     	if (person != null) {
     		// Fill the labels with info from the person object.
@@ -100,9 +91,7 @@ public class PersonOverviewController {
     	}
     }
 
-	/**
-	 * Called when the user clicks on the delete button.
-	 */
+	
 	@FXML
 	private void handleDeletePerson() {
 		int selectedIndex = personTable.getSelectionModel().getSelectedIndex();
@@ -118,10 +107,7 @@ public class PersonOverviewController {
 		}
 	}
 	
-	/**
-	 * Called when the user clicks the new button. Opens a dialog to edit
-	 * details for a new person.
-	 */
+	
 	@FXML
 	private void handleNewPerson() {
 		Person tempPerson = new Person();
@@ -131,10 +117,7 @@ public class PersonOverviewController {
 		}
 	}
 
-	/**
-	 * Called when the user clicks the edit button. Opens a dialog to edit
-	 * details for the selected person.
-	 */
+	
 	@FXML
 	private void handleEditPerson() {
 		Person selectedPerson = personTable.getSelectionModel().getSelectedItem();
@@ -154,7 +137,4 @@ public class PersonOverviewController {
 		}
 	}
 
-    public void setDesarrollo(Desarrollo aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }
