@@ -1,9 +1,13 @@
 package desarrollo;
 
 import desarrollo.model.Person;
+import desarrollo.model.PersonListWrapper;
 import desarrollo.view.PersonEditDialogController;
 import java.io.IOException;
 import desarrollo.view.PersonOverviewController;
+import desarrollo.view.RootLayoutController;
+import java.io.File;
+import java.util.prefs.Preferences;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -14,6 +18,11 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import org.controlsfx.dialog.Dialogs;
 
 public class Desarrollo extends Application {
 
@@ -38,14 +47,6 @@ public class Desarrollo extends Application {
         personData.add(new Person("Martin", "Mueller"));
     }
 
-    /**
-     * Returns the data as an observable list of Persons. 
-     * @return
-     */
-    public ObservableList<Person> getPersonData() {
-        return personData;
-    }
-
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -60,20 +61,32 @@ public class Desarrollo extends Application {
      * Initializes the root layout.
      */
     public void initRootLayout() {
-        try {
-            // Load root layout from fxml file.
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Desarrollo.class.getResource("view/RootLayout.fxml"));
-            rootLayout = (BorderPane) loader.load();
-            
-            // Show the scene containing the root layout.
-            Scene scene = new Scene(rootLayout);
-            primaryStage.setScene(scene);
-            primaryStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    try {
+        // Load root layout from fxml file.
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(Desarrollo.class
+                .getResource("view/RootLayout.fxml"));
+        rootLayout = (BorderPane) loader.load();
+
+        // Show the scene containing the root layout.
+        Scene scene = new Scene(rootLayout);
+        primaryStage.setScene(scene);
+
+        // Give the controller access to the main app.
+        RootLayoutController controller = loader.getController();
+        controller.setDesarrollo(this);
+
+        primaryStage.show();
+    } catch (IOException e) {
+        e.printStackTrace();
     }
+
+    // Try to load last opened person file.
+    File file = getPersonFilePath();
+    if (file != null) {
+        loadPersonDataFromFile(file);
+    }
+}
 
     /**
      * Shows the person overview inside the root layout.
@@ -128,17 +141,122 @@ public class Desarrollo extends Application {
 	}
     
     
+	public File getPersonFilePath() {
+		Preferences prefs = Preferences.userNodeForPackage(Desarrollo.class);
+		String filePath = prefs.get("filePath", null);
+		if (filePath != null) {
+			return new File(filePath);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Sets the file path of the currently loaded file. The path is persisted in
+	 * the OS specific registry.
+	 * 
+	 * @param file
+	 *            the file or null to remove the path
+	 */
+	public void setPersonFilePath(File file) {
+		Preferences prefs = Preferences.userNodeForPackage(Desarrollo.class);
+		if (file != null) {
+			prefs.put("filePath", file.getPath());
+
+			// Update the stage title.
+			primaryStage.setTitle("AddressApp - " + file.getName());
+		} else {
+			prefs.remove("filePath");
+
+			// Update the stage title.
+			primaryStage.setTitle("AddressApp");
+		}
+	}
+
+	/**
+	 * Loads person data from the specified file. The current person data will
+	 * be replaced.
+	 * 
+	 * @param file
+	 */
+	public void loadPersonDataFromFile(File file) {
+		try {
+			JAXBContext context = JAXBContext
+					.newInstance(PersonListWrapper.class);
+			Unmarshaller um = context.createUnmarshaller();
+
+			// Reading XML from the file and unmarshalling.
+			PersonListWrapper wrapper = (PersonListWrapper) um.unmarshal(file);
+
+			personData.clear();
+			personData.addAll(wrapper.getPersons());
+
+			// Save the file path to the registry.
+			setPersonFilePath(file);
+
+		} catch (Exception e) { // catches ANY exception
+			Dialogs.create()
+					.title("Error")
+					.masthead("Could not load data from file:\n" + file.getPath())
+					.showException(e);
+		}
+	}
+
+	/**
+	 * Saves the current person data to the specified file.
+	 * 
+	 * @param file
+	 */
+	public void savePersonDataToFile(File file) {
+		try {
+			JAXBContext context = JAXBContext
+					.newInstance(PersonListWrapper.class);
+			Marshaller m = context.createMarshaller();
+			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+			// Wrapping our person data.
+			PersonListWrapper wrapper = new PersonListWrapper();
+			wrapper.setPersons(personData);
+
+			// Marshalling and saving XML to the file.
+			m.marshal(wrapper, file);
+			
+			// Save the file path to the registry.
+			setPersonFilePath(file);
+		} catch (Exception e) { // catches ANY exception
+			Dialogs.create().title("Error")
+					.masthead("Could not save data to file:\n" + file.getPath())
+					.showException(e);
+		}
+	}
+
 	/**
 	 * Returns the main stage.
+	 * 
 	 * @return
 	 */
 	public Stage getPrimaryStage() {
 		return primaryStage;
 	}
 
-    public static void main(String[] args) {
-        launch(args);
+	/**
+	 * Returns the data as an observable list of Persons.
+	 * 
+	 * @return
+	 */
+	public ObservableList<Person> getPersonData() {
+		return personData;
+	}
+
+	public static void main(String[] args) {
+		launch(args);
+	}
+
+    public void getPersonFilePath(Object object) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    
+    public Window gitPrimaryStage() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
